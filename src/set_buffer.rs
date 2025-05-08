@@ -1,5 +1,7 @@
 use super::Tmux;
+use super::Error;
 use super::Target;
+use super::interpret;
 
 use std::process::Command;
 
@@ -35,7 +37,7 @@ impl<'server> SetBuffer<'server> {
         self
     }
 
-    pub fn run(self, content:&str) -> Result<(), ()> {
+    pub fn run(self, content:&str) -> Result<(), Error> {
         let mut cmd_holder = Command::new("tmux");
         let holder = cmd_holder.arg("set-buffer");
 
@@ -46,14 +48,10 @@ impl<'server> SetBuffer<'server> {
         self.name.map(|name|{holder.arg("-b").arg(name)});
 
         let ret = holder.arg(content).output();
-        match ret {
-            Ok(_ok) => {
-                Ok(())
-            }
-            Err(_err) => {
-                Err(())
-            }
-        }
+
+        //we only care if this gave and error
+        let _ = interpret(ret)?;
+        Ok(())
     }
 }
 
@@ -84,3 +82,16 @@ fn set_fetch_nameless_buffer() {
     let holder = buffer.run().unwrap();
     assert_eq!(content, holder);
 }
+
+#[test]
+#[should_panic]
+fn set_fetch_named_buffer_error() {
+    let content = "name_less_buffer";
+    let tmux = Tmux::default();
+
+    let mut buffer = tmux.show_buffer();
+    buffer.set_name("1231231231231231231231231");
+    let holder = buffer.run().unwrap();
+    assert_eq!(content, holder);
+}
+
