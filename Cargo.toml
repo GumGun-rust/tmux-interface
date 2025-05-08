@@ -2,3 +2,12 @@
 name = "tmux-interface"
 version = "0.1.0"
 edition = "2024"
+
+description = "tmux interface"
+repository = "https://github.com/GumGun-rust/tmux-interface"
+
+[dependencies]
+crabtime = "1.1.3"
+derive_more = { version = "2.0.1", features = ["display", "from"] }
+thiserror = "2.0.12"
+
